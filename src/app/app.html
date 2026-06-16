@@ -1,51 +1,141 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-<a href=""><i class="bi bi-car-front-fill"></i> Premium Cars</a>
+  <a href=""><i class="bi bi-car-front-fill"></i> Car Hub</a>
   <a href="#">Strona Główna</a>
   <a href="#">Polecane</a>
   <a href="#">Kontakt</a>
+  <button class="nav-avatar" (click)="openModal()" title="Zaloguj się">
+    <i class="bi bi-person-circle"></i>
+  </button>
 </nav>
 <div class="car-app">
   <header class="app-header">
-    <p class="app-eyebrow">Galeria</p>
-    <h1 class="app-title">Premium Cars<br></h1>
+    <h1 class="app-title">Gorące<br><span class="app-title--accent">Samochody w twojej okolicy</span></h1>
   </header>
-  <div class="filter-bar">
-    <span class="filter-label">Filtruj markę</span>
-    <div class="brand-switch brand-bmw form-check form-switch">
-      <input class="form-check-input" type="checkbox" [(ngModel)]="czySzukaBMW" id="ctrId">
-      <label class="form-check-label" for="ctrId">BMW</label>
-    </div>
-    <div class="brand-switch brand-audi form-check form-switch">
-      <input class="form-check-input" type="checkbox" [(ngModel)]="czySzukaAudi" id="ctrId2">
-      <label class="form-check-label" for="ctrId2">AUDI</label>
-    </div>
-    <div class="brand-switch brand-mercedes form-check form-switch">
-      <input class="form-check-input" type="checkbox" [(ngModel)]="czySzukaMercedes" id="ctrId3">
-      <label class="form-check-label" for="ctrId3">Mercedes</label>
-    </div>
-  </div>
-  <div class="row g-4">
-    <div class="col-sm-6 col-md-4" *ngFor="let obrazki of filter">
-      <div class="car-card">
-        <div class="car-img-wrap">
-          <img [src]="'assets/' + obrazki.ImgPath" [alt]="obrazki.brand" class="car-img">
-        </div>
-        <div class="car-footer">
-          <button class="like-btn" (click)="obrazki.likes = obrazki.likes + 1">
-            <i class="bi bi-heart-fill" aria-hidden="true"></i>
-            Polub
+  <div class="portal-layout">
+    <aside class="filter-sidebar">
+      <div class="filter-bar">
+        <span class="filter-label">Filtry</span>
+        <div class="dropdown-overlay" *ngIf="filterDropdownOpen" (click)="closeFilterDropdown()"></div>
+        <div class="custom-select" [class.open]="filterDropdownOpen">
+          <button class="select-trigger" (click)="toggleFilterDropdown()">
+            <i class="bi bi-tag"></i>
+            Marka
+            <span class="select-badge" *ngIf="selectedBrandCount < 3">{{ selectedBrandCount }}</span>
+            <i class="bi bi-chevron-down select-chevron"></i>
           </button>
-          <p>{{obrazki.model}}</p>
-          <span class="like-count">
-            <i class="bi bi-hand-thumbs-up" aria-hidden="true"></i>
-            {{ obrazki.likes }}
-          </span>
+          <div class="select-panel">
+            <label class="select-option">
+              <input type="checkbox" [(ngModel)]="filterBMW">
+              <span class="checkmark"></span>
+              <span class=""></span>
+              BMW
+            </label>
+            <label class="select-option">
+              <input type="checkbox" [(ngModel)]="filterAudi">
+              <span class="checkmark"></span>
+              <span class=""></span>
+              Audi
+            </label>
+            <label class="select-option">
+              <input type="checkbox" [(ngModel)]="filterMercedes">
+              <span class="checkmark"></span>
+              <span class=""></span>
+              Mercedes
+            </label>
+          </div>
         </div>
       </div>
+    </aside>
+    <section class="listing-section">
+      <p class="results-count" *ngIf="filteredListings.length > 0">
+        Znaleziono <strong>{{ filteredListings.length }}</strong> ogłoszeń
+      </p>
+      <div class="listing-list">
+        <div class="listing-card" *ngFor="let ad of filteredListings">
+          <div class="listing-img-wrap">
+            <img [src]="'assets/' + ad.imgPath" [alt]="ad.brand + ' ' + ad.model" class="listing-img">
+          </div>
+          <div class="listing-body">
+            <div class="listing-top">
+              <div>
+                <span class="listing-brand">{{ ad.brand }}</span>
+                <h2 class="listing-model">{{ ad.model }}</h2>
+              </div>
+              <div class="listing-price">{{ ad.price | number:'1.0-0' }} zł</div>
+            </div>
+            <div class="listing-meta">
+              <span class="meta-pill">
+                <i class="bi bi-speedometer2"></i>
+                {{ ad.mileage | number:'1.0-0' }} km
+              </span>
+              <span class="meta-pill">
+                <i class="bi bi-fuel-pump"></i>
+                Benzyna
+              </span>
+              <span class="meta-pill">
+                <i class="bi bi-geo-alt"></i>
+                {{ad.localization}}
+              </span>
+            </div>
+            <div class="listing-footer">
+              <button class="like-btn" [class.liked]="ad.liked" (click)="toggleObserwuj(ad)">
+                <i class="bi" [class.bi-heart-fill]="ad.liked" [class.bi-heart]="!ad.liked"></i>
+                {{ ad.liked ? 'Obserwujesz' : 'Obserwuj' }}
+              </button>
+              <span class="like-count">
+                <i class="bi bi-hand-thumbs-up"></i>
+                {{ ad.likes }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="no-results" *ngIf="filteredListings.length === 0">
+        <i class="bi bi-search"></i>
+        Brak ogłoszeń dla wybranych marek.
+      </p>
+    </section>
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="modalOpen" (click)="closeModal()">
+  <div class="app-modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeModal()">
+      <i class="bi bi-x-lg"></i>
+    </button>
+    <div class="modal-avatar-wrap">
+      <i class="bi bi-person-circle modal-avatar-icon"></i>
+    </div>
+    <h2 class="modal-title">Twoje konto</h2>
+
+    <div class="modal-form">
+      <div class="modal-field">
+        <label class="modal-field-label" for="email">Adres e-mail</label>
+        <input
+          id="email"
+          class="modal-input"
+          [class.modal-input--error]="emailInvalid"
+          type="text"
+          placeholder="twoj@email.com"
+          [(ngModel)]="emailValue"
+          (blur)="validateEmail()"
+          (input)="onEmailInput()">
+        <span class="modal-field-error" *ngIf="emailInvalid">
+          <i class="bi bi-exclamation-circle"></i>
+         Wprowadzono niepoprawny adres email
+        </span>
+      </div>
+      <div class="modal-field">
+        <label class="modal-field-label" for="password">Hasło</label>
+        <input
+          id="password"
+          class="modal-input"
+          type="password"
+          placeholder="••••••••">
+      </div>
+      <button class="modal-submit-btn" (click)="onLogin()">
+        <i class="bi bi-box-arrow-in-right"></i>
+        Zaloguj się
+      </button>
     </div>
   </div>
-  <p class="no-results" *ngIf="filter.length === 0">
-    <i class="bi bi-search" aria-hidden="true"></i>
-    Brak wyników dla wybranych marek.
-  </p>
 </div>
