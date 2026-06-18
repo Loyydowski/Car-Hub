@@ -12,40 +12,123 @@
     <h1 class="app-title">Gorące<br><span class="app-title--accent">Samochody w twojej okolicy</span></h1>
   </header>
   <div class="portal-layout">
+
+
     <aside class="filter-sidebar">
       <div class="filter-bar">
         <span class="filter-label">Filtry</span>
+
+        <!-- MARKA -->
         <div class="dropdown-overlay" *ngIf="filterDropdownOpen" (click)="closeFilterDropdown()"></div>
         <div class="custom-select" [class.open]="filterDropdownOpen">
           <button class="select-trigger" (click)="toggleFilterDropdown()">
             <i class="bi bi-tag"></i>
             Marka
-            <span class="select-badge" *ngIf="selectedBrandCount < 3">{{ selectedBrandCount }}</span>
+            <span class="select-badge" *ngIf="selectedBrandCount < brands.length">{{ selectedBrandCount }}</span>
             <i class="bi bi-chevron-down select-chevron"></i>
           </button>
           <div class="select-panel">
-            <label class="select-option">
-              <input type="checkbox" [(ngModel)]="filterBMW">
+            <div class="select-search">
+              <i class="bi bi-search select-search-icon"></i>
+              <input
+                type="text"
+                class="select-search-input"
+                placeholder="Szukaj marki, np. BMW..."
+                [(ngModel)]="brandSearchTerm">
+            </div>
+            <label class="select-option" *ngFor="let brand of filteredBrandOptions">
+              <input type="checkbox" [(ngModel)]="brand.selected">
               <span class="checkmark"></span>
               <span class=""></span>
-              BMW
+              {{ brand.name }}
             </label>
-            <label class="select-option">
-              <input type="checkbox" [(ngModel)]="filterAudi">
-              <span class="checkmark"></span>
-              <span class=""></span>
-              Audi
-            </label>
-            <label class="select-option">
-              <input type="checkbox" [(ngModel)]="filterMercedes">
-              <span class="checkmark"></span>
-              <span class=""></span>
-              Mercedes
-            </label>
+            <p class="select-empty" *ngIf="filteredBrandOptions.length === 0">
+              Brak marek dla "{{ brandSearchTerm }}"
+            </p>
           </div>
         </div>
+
+        <!-- CENA + PRZEBIEG -->
+        <div class="dropdown-overlay" *ngIf="openRangeDropdown" (click)="closeRangeDropdown()"></div>
+
+
+<div class="range-filter" *ngFor="let filter of rangeFilters">
+  <span class="range-filter-label">
+    <i class="bi" [ngClass]="filter.icon"></i>
+    {{ filter.label }}
+  </span>
+
+  <div class="range-inputs-row">
+
+    <!-- OD -->
+    <div class="range-combo" [class.open]="isRangeDropdownOpen(filter, 'from')">
+      <div class="range-combo-input-wrap">
+        <input
+          type="number"
+          class="range-combo-input"
+          [placeholder]="filter.placeholderFrom"
+          [(ngModel)]="filter.from"
+          (click)="openRangeField(filter, 'from')"
+          min="0">
+        <button
+          type="button"
+          class="range-combo-chevron"
+          (click)="toggleRangeDropdown(filter, 'from')">
+          <i class="bi bi-chevron-down"></i>
+        </button>
       </div>
-    </aside>
+      <div class="range-combo-panel" *ngIf="isRangeDropdownOpen(filter, 'from')">
+        <button
+          type="button"
+          class="range-combo-option"
+          *ngFor="let val of filter.options"
+          (click)="selectRangeValue(filter, 'from', val)">
+          {{ val | number:'1.0-0' }} {{ filter.unit }}
+        </button>
+      </div>
+    </div>
+
+    <span class="range-sep">–</span>
+
+    <!-- DO -->
+    <div class="range-combo" [class.open]="isRangeDropdownOpen(filter, 'to')">
+      <div class="range-combo-input-wrap">
+        <input
+          type="number"
+          class="range-combo-input"
+          [placeholder]="filter.placeholderTo"
+          [(ngModel)]="filter.to"
+          (click)="openRangeField(filter, 'to')"
+          min="0">
+        <button
+          type="button"
+          class="range-combo-chevron"
+          (click)="toggleRangeDropdown(filter, 'to')">
+          <i class="bi bi-chevron-down"></i>
+        </button>
+      </div>
+      <div class="range-combo-panel" *ngIf="isRangeDropdownOpen(filter, 'to')">
+        <button
+          type="button"
+          class="range-combo-option"
+          *ngFor="let val of filter.options"
+          (click)="selectRangeValue(filter, 'to', val)">
+          {{ val | number:'1.0-0' }} {{ filter.unit }}
+        </button>
+      </div>
+    </div>
+    <button
+      type="button"
+      class="range-clear-btn"
+      *ngIf="hasActiveRange(filter)"
+      (click)="clearRange(filter)"
+      title="Wyczyść">
+      <i class="bi bi-x-circle"></i>
+    </button>
+  </div>
+</div>
+</div>
+</aside>
     <section class="listing-section">
       <p class="results-count" *ngIf="filteredListings.length > 0">
         Znaleziono <strong>{{ filteredListings.length }}</strong> ogłoszeń
@@ -92,7 +175,7 @@
       </div>
       <p class="no-results" *ngIf="filteredListings.length === 0">
         <i class="bi bi-search"></i>
-        Brak ogłoszeń dla wybranych marek.
+        Nie Znaleziono ogłoszeń o podanych wymaganiach
       </p>
     </section>
   </div>
