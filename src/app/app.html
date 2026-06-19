@@ -7,24 +7,37 @@
     <i class="bi bi-person-circle"></i>
   </button>
 </nav>
+
 <div class="car-app">
   <header class="app-header">
-    <h1 class="app-title">Gorące<br><span class="app-title--accent">Samochody w twojej okolicy</span></h1>
+    <h1 class="app-title">
+      Gorące<br>
+      <span class="app-title--accent">Samochody w twojej okolicy</span>
+    </h1>
   </header>
+
   <div class="portal-layout">
-
-
+    <!-- SIDEBAR -->
     <aside class="filter-sidebar">
       <div class="filter-bar">
-        <span class="filter-label">Filtry</span>
-
-        <!-- MARKA -->
+        <div class="filter-header">
+          <span class="filter-label">Filtry</span>
+          <button
+            class="filter-reset-btn"
+            (click)="resetFilters()"
+            title="Wyczyść filtry">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            Resetuj
+          </button>
+        </div>
         <div class="dropdown-overlay" *ngIf="filterDropdownOpen" (click)="closeFilterDropdown()"></div>
         <div class="custom-select" [class.open]="filterDropdownOpen">
           <button class="select-trigger" (click)="toggleFilterDropdown()">
             <i class="bi bi-tag"></i>
             Marka
-            <span class="select-badge" *ngIf="selectedBrandCount < brands.length">{{ selectedBrandCount }}</span>
+            <span class="select-badge" *ngIf="selectedBrandCount < brands.length">
+              {{ selectedBrandCount }}
+            </span>
             <i class="bi bi-chevron-down select-chevron"></i>
           </button>
           <div class="select-panel">
@@ -39,7 +52,6 @@
             <label class="select-option" *ngFor="let brand of filteredBrandOptions">
               <input type="checkbox" [(ngModel)]="brand.selected">
               <span class="checkmark"></span>
-              <span class=""></span>
               {{ brand.name }}
             </label>
             <p class="select-empty" *ngIf="filteredBrandOptions.length === 0">
@@ -47,96 +59,155 @@
             </p>
           </div>
         </div>
+        <div class="condition-filter">
+          <span class="range-filter-label">
+            <i class="bi bi-shield-check"></i>
+            Stan pojazdu
+          </span>
+          <div class="condition-pills">
+            <button
+              class="condition-pill"
+              [class.active]="stagedCondition === 'any'"
+              (click)="setCondition('any')">
+              Dowolny
+            </button>
+            <button
+              class="condition-pill"
+              [class.active]="stagedCondition === 'new'"
+              (click)="setCondition('new')">
+              <i class="bi bi-stars"></i> Nowy
+            </button>
+            <button
+              class="condition-pill"
+              [class.active]="stagedCondition === 'used'"
+              (click)="setCondition('used')">
+              <i class="bi bi-clock-history"></i> Używany
+            </button>
+          </div>
+        </div>
+        <div class="dropdown-overlay"
+             *ngIf="openRangeDropdown"
+             (click)="closeRangeDropdown()">
+        </div>
+        <div class="range-filter" *ngFor="let filter of rangeFilters">
+          <span class="range-filter-label">
+            <i class="bi" [ngClass]="filter.icon"></i>
+            {{ filter.label }}
+          </span>
+          <div class="range-inputs-row">
+            <div class="range-combo" [class.open]="isRangeDropdownOpen(filter, 'from')">
+              <div class="range-combo-input-wrap">
+                <input
+                  type="number"
+                  class="range-combo-input"
+                  [placeholder]="filter.placeholderFrom"
+                  [(ngModel)]="filter.from"
+                  (click)="openRangeField(filter, 'from')"
+                  min="0">
+                <button
+                  type="button"
+                  class="range-combo-chevron"
+                  (click)="toggleRangeDropdown(filter, 'from')">
+                  <i class="bi bi-chevron-down"></i>
+                </button>
+              </div>
+              <div class="range-combo-panel" *ngIf="isRangeDropdownOpen(filter, 'from')">
+                <button
+                  type="button"
+                  class="range-combo-option"
+                  *ngFor="let val of filter.options"
+                  (click)="selectRangeValue(filter, 'from', val)">
+                  {{ val | number:'1.0-0' }} {{ filter.unit }}
+                </button>
+              </div>
+            </div>
 
-        <!-- CENA + PRZEBIEG -->
-        <div class="dropdown-overlay" *ngIf="openRangeDropdown" (click)="closeRangeDropdown()"></div>
-
-
-<div class="range-filter" *ngFor="let filter of rangeFilters">
-  <span class="range-filter-label">
-    <i class="bi" [ngClass]="filter.icon"></i>
-    {{ filter.label }}
-  </span>
-
-  <div class="range-inputs-row">
-
-    <!-- OD -->
-    <div class="range-combo" [class.open]="isRangeDropdownOpen(filter, 'from')">
-      <div class="range-combo-input-wrap">
-        <input
-          type="number"
-          class="range-combo-input"
-          [placeholder]="filter.placeholderFrom"
-          [(ngModel)]="filter.from"
-          (click)="openRangeField(filter, 'from')"
-          min="0">
+            <span class="range-sep">–</span>
+            <div class="range-combo" [class.open]="isRangeDropdownOpen(filter, 'to')">
+              <div class="range-combo-input-wrap">
+                <input
+                  type="number"
+                  class="range-combo-input"
+                  [placeholder]="filter.placeholderTo"
+                  [(ngModel)]="filter.to"
+                  (click)="openRangeField(filter, 'to')"
+                  min="0">
+                <button
+                  type="button"
+                  class="range-combo-chevron"
+                  (click)="toggleRangeDropdown(filter, 'to')">
+                  <i class="bi bi-chevron-down"></i>
+                </button>
+              </div>
+              <div class="range-combo-panel" *ngIf="isRangeDropdownOpen(filter, 'to')">
+                <button
+                  type="button"
+                  class="range-combo-option"
+                  *ngFor="let val of filter.options"
+                  (click)="selectRangeValue(filter, 'to', val)">
+                  {{ val | number:'1.0-0' }} {{ filter.unit }}
+                </button>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="range-clear-btn"
+              *ngIf="hasActiveRange(filter)"
+              (click)="clearRange(filter)"
+              title="Wyczyść">
+              <i class="bi bi-x-circle"></i>
+            </button>
+          </div>
+        </div>
         <button
-          type="button"
-          class="range-combo-chevron"
-          (click)="toggleRangeDropdown(filter, 'from')">
-          <i class="bi bi-chevron-down"></i>
+          class="apply-filters-btn"
+          [class.apply-filters-btn--pending]="hasPendingChanges"
+          (click)="applyFilters()"
+          [disabled]="isLoading">
+
+          <ng-container *ngIf="!isLoading">
+            <i class="bi bi-funnel-fill"></i>
+            Zastosuj filtry
+            <span class="apply-badge" *ngIf="activeFiltersCount > 0">
+              {{ activeFiltersCount }}
+            </span>
+          </ng-container>
+
+          <!--Loading spinner -->
+          <ng-container *ngIf="isLoading">
+            <span class="btn-spinner"></span>
+            Ładowanie...
+          </ng-container>
         </button>
       </div>
-      <div class="range-combo-panel" *ngIf="isRangeDropdownOpen(filter, 'from')">
-        <button
-          type="button"
-          class="range-combo-option"
-          *ngFor="let val of filter.options"
-          (click)="selectRangeValue(filter, 'from', val)">
-          {{ val | number:'1.0-0' }} {{ filter.unit }}
-        </button>
-      </div>
-    </div>
-
-    <span class="range-sep">–</span>
-
-    <!-- DO -->
-    <div class="range-combo" [class.open]="isRangeDropdownOpen(filter, 'to')">
-      <div class="range-combo-input-wrap">
-        <input
-          type="number"
-          class="range-combo-input"
-          [placeholder]="filter.placeholderTo"
-          [(ngModel)]="filter.to"
-          (click)="openRangeField(filter, 'to')"
-          min="0">
-        <button
-          type="button"
-          class="range-combo-chevron"
-          (click)="toggleRangeDropdown(filter, 'to')">
-          <i class="bi bi-chevron-down"></i>
-        </button>
-      </div>
-      <div class="range-combo-panel" *ngIf="isRangeDropdownOpen(filter, 'to')">
-        <button
-          type="button"
-          class="range-combo-option"
-          *ngFor="let val of filter.options"
-          (click)="selectRangeValue(filter, 'to', val)">
-          {{ val | number:'1.0-0' }} {{ filter.unit }}
-        </button>
-      </div>
-    </div>
-    <button
-      type="button"
-      class="range-clear-btn"
-      *ngIf="hasActiveRange(filter)"
-      (click)="clearRange(filter)"
-      title="Wyczyść">
-      <i class="bi bi-x-circle"></i>
-    </button>
-  </div>
-</div>
-</div>
-</aside>
+    </aside>
     <section class="listing-section">
-      <p class="results-count" *ngIf="filteredListings.length > 0">
-        Znaleziono <strong>{{ filteredListings.length }}</strong> ogłoszeń
+      <p class="results-count" *ngIf="!isLoading && displayedListings.length > 0">
+        Znaleziono <strong>{{ displayedListings.length }}</strong> ogłoszeń
       </p>
-      <div class="listing-list">
-        <div class="listing-card" *ngFor="let ad of filteredListings">
+      <!-- SKELETON LOADER -->
+      <div class="listing-list" *ngIf="isLoading">
+        <div class="listing-card skeleton-card" *ngFor="let i of skeletonCount">
+          <div class="skeleton-img"></div>
+          <div class="skeleton-body">
+            <div class="skeleton-line skeleton-line--short"></div>
+            <div class="skeleton-line skeleton-line--title"></div>
+            <div class="skeleton-pills">
+              <div class="skeleton-pill"></div>
+              <div class="skeleton-pill"></div>
+              <div class="skeleton-pill"></div>
+            </div>
+            <div class="skeleton-line skeleton-line--footer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="listing-list" *ngIf="!isLoading">
+        <div class="listing-card" *ngFor="let ad of displayedListings">
           <div class="listing-img-wrap">
-            <img [src]="'assets/' + ad.imgPath" [alt]="ad.brand + ' ' + ad.model" class="listing-img">
+            <img
+              [src]="'assets/' + ad.imgPath"
+              [alt]="ad.brand + ' ' + ad.model"
+              class="listing-img">
           </div>
           <div class="listing-body">
             <div class="listing-top">
@@ -157,12 +228,30 @@
               </span>
               <span class="meta-pill">
                 <i class="bi bi-geo-alt"></i>
-                {{ad.localization}}
+                {{ ad.localization }}
+              </span>
+              <span
+                class="meta-pill condition-badge"
+                [class.condition-badge--new]="ad.condition === 'new'"
+                [class.condition-badge--used]="ad.condition === 'used'">
+                <i
+                  class="bi"
+                  [class.bi-stars]="ad.condition === 'new'"
+                  [class.bi-clock-history]="ad.condition === 'used'">
+                </i>
+                {{ ad.condition === 'new' ? 'Nowy' : 'Używany' }}
               </span>
             </div>
             <div class="listing-footer">
-              <button class="like-btn" [class.liked]="ad.liked" (click)="toggleObserwuj(ad)">
-                <i class="bi" [class.bi-heart-fill]="ad.liked" [class.bi-heart]="!ad.liked"></i>
+              <button
+                class="like-btn"
+                [class.liked]="ad.liked"
+                (click)="toggleObserwuj(ad)">
+                <i
+                  class="bi"
+                  [class.bi-heart-fill]="ad.liked"
+                  [class.bi-heart]="!ad.liked">
+                </i>
                 {{ ad.liked ? 'Obserwujesz' : 'Obserwuj' }}
               </button>
               <span class="like-count">
@@ -173,13 +262,16 @@
           </div>
         </div>
       </div>
-      <p class="no-results" *ngIf="filteredListings.length === 0">
+      <p class="no-results" *ngIf="!isLoading && displayedListings.length === 0">
         <i class="bi bi-search"></i>
-        Nie Znaleziono ogłoszeń o podanych wymaganiach
+        Nie znaleziono ogłoszeń o podanych wymaganiach
       </p>
+
     </section>
   </div>
 </div>
+
+<!-- LOGIN -->
 <div class="modal-overlay" *ngIf="modalOpen" (click)="closeModal()">
   <div class="app-modal" (click)="$event.stopPropagation()">
     <button class="modal-close" (click)="closeModal()">
@@ -189,7 +281,6 @@
       <i class="bi bi-person-circle modal-avatar-icon"></i>
     </div>
     <h2 class="modal-title">Twoje konto</h2>
-
     <div class="modal-form">
       <div class="modal-field">
         <label class="modal-field-label" for="email">Adres e-mail</label>
@@ -204,7 +295,7 @@
           (input)="onEmailInput()">
         <span class="modal-field-error" *ngIf="emailInvalid">
           <i class="bi bi-exclamation-circle"></i>
-         Wprowadzono niepoprawny adres email
+          Wprowadzono niepoprawny adres email
         </span>
       </div>
       <div class="modal-field">
@@ -222,3 +313,74 @@
     </div>
   </div>
 </div>
+
+<!-- FOOTER  -->
+<footer class="app-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="footer-logo">
+        <i class="bi bi-car-front-fill"></i> Car Hub
+      </span>
+      <p class="footer-tagline">
+        Najlepsze samochody w Twojej okolicy.<br>
+        Szybko, prosto i bezpiecznie.
+      </p>
+      <div class="footer-socials">
+        <a href="#" class="footer-social-btn" title="Facebook">
+          <i class="bi bi-facebook"></i>
+        </a>
+        <a href="#" class="footer-social-btn" title="Instagram">
+          <i class="bi bi-instagram"></i>
+        </a>
+        <a href="#" class="footer-social-btn" title="Twitter/X">
+          <i class="bi bi-twitter-x"></i>
+        </a>
+        <a href="#" class="footer-social-btn" title="YouTube">
+          <i class="bi bi-youtube"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="footer-col">
+      <span class="footer-col-title">Nawigacja</span>
+      <a href="#" class="footer-link"><i class="bi bi-house"></i> Strona Główna</a>
+      <a href="#" class="footer-link"><i class="bi bi-star"></i> Polecane</a>
+      <a href="#" class="footer-link"><i class="bi bi-heart"></i> Obserwowane</a>
+      <a href="#" class="footer-link"><i class="bi bi-person"></i> Moje konto</a>
+    </div>
+
+    <div class="footer-col">
+      <span class="footer-col-title">Informacje</span>
+      <a href="#" class="footer-link"><i class="bi bi-info-circle"></i> O nas</a>
+      <a href="#" class="footer-link"><i class="bi bi-shield-lock"></i> Polityka prywatności</a>
+      <a href="#" class="footer-link"><i class="bi bi-file-text"></i> Regulamin</a>
+      <a href="#" class="footer-link"><i class="bi bi-question-circle"></i> FAQ</a>
+    </div>
+
+    <div class="footer-col">
+      <span class="footer-col-title">Kontakt</span>
+      <span class="footer-contact-item">
+        <i class="bi bi-envelope"></i> kontakt&#64;carhub.pl
+      </span>
+      <span class="footer-contact-item">
+        <i class="bi bi-telephone"></i> +48 123 456 789
+      </span>
+      <span class="footer-contact-item">
+        <i class="bi bi-geo-alt"></i> Warszawa, Polska
+      </span>
+      <span class="footer-contact-item">
+        <i class="bi bi-clock"></i> Pon–Pt: 9:00–17:00
+      </span>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>© 2025 Car Hub. Wszelkie prawa zastrzeżone.</span>
+    <span class="footer-bottom-sep">|</span>
+    <span>
+      Wykonano z
+      <i class="bi bi-heart-fill" style="color:#e63946;font-size:0.75rem;"></i>
+      przez zespół Car Hub
+    </span>
+  </div>
+</footer>
