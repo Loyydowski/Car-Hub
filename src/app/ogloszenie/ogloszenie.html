@@ -1,0 +1,137 @@
+<div class="ad-page">
+  <div class="container">
+    <button class="back-btn" (click)="goBack()">
+      <i class="bi bi-arrow-left"></i> Wróć
+    </button>
+
+    <div class="ad-layout" *ngIf="listing; else noData">
+      <div class="ad-main">
+        <div class="ad-gallery">
+          <div class="gallery-main">
+            <button class="gallery-arrow prev" (click)="prevImage()"><i class="bi bi-chevron-left"></i></button>
+            <img [src]="mainImage" alt="Zdjęcie pojazdu" class="main-img">
+            <button class="gallery-arrow next" (click)="nextImage()"><i class="bi bi-chevron-right"></i></button>
+          </div>
+          <div class="gallery-thumbs">
+            <img *ngFor="let img of images; let i = index" 
+                 [src]="img" 
+                 (click)="setMainImage(i)"
+                 [class.active]="mainImageIndex === i"
+                 class="thumb-img">
+          </div>
+        </div>
+        <div class="ad-section">
+          <h2 class="section-title">Najważniejsze</h2>
+          <div class="params-grid">
+            <div class="param-card">
+              <i class="bi bi-speedometer2"></i>
+              <span class="param-label">Przebieg</span>
+              <span class="param-value">{{ listing.mileage | number:'1.0-0' }} km</span>
+            </div>
+            <div class="param-card">
+              <i class="bi bi-fuel-pump"></i>
+              <span class="param-label">Paliwo</span>
+              <span class="param-value">{{ listing.fuel }}</span>
+            </div>
+            <div class="param-card">
+              <i class="bi bi-gear"></i>
+              <span class="param-label">Skrzynia</span>
+              <span class="param-value">Automatyczna</span>
+            </div>
+            <div class="param-card">
+              <i class="bi bi-car-front"></i>
+              <span class="param-label">Nadwozie</span>
+              <span class="param-value">{{ listing.model === 'SUV' || listing.model === 'Quadro' ? 'SUV' : 'Sedan' }}</span>
+            </div>
+            <div class="param-card">
+              <i class="bi bi-plugin"></i>
+              <span class="param-label">Pojemność</span>
+              <span class="param-value">1998 cm³</span>
+            </div>
+            <div class="param-card">
+              <i class="bi bi-lightning-charge"></i>
+              <span class="param-label">Moc</span>
+              <span class="param-value">190 KM</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ad-section">
+          <h2 class="section-title">Opis pojazdu</h2>
+          <div class="description-content" [class.expanded]="isDescriptionExpanded">
+            <p><strong>Super Szybkie auto - tanio</strong></p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi tristique suscipit ligula, sit amet convallis augue ullamcorper quis. Sed at justo risus. Quisque in sapien mi. Nullam fermentum nisi ipsum, vel aliquet turpis tincidunt in. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</p>
+            <p>Aenean consectetur neque sit amet finibus eleifend. Vivamus eu lorem vel nulla convallis vehicula in ac risus. Mauris pretium aliquet interdum. Ut posuere nisi nec ultrices venenatis. Aliquam id tellus condimentum, accumsan nunc et, porta justo. Curabitur sed nisl quis nulla euismod tempor.</p>
+            <p>Duis sed metus elit. Nam bibendum, ipsum tincidunt consectetur volutpat, elit est feugiat metus, nec elementum quam risus in quam. Sed fermentum eros lectus, eu bibendum risus sagittis ut. Nunc rhoncus dolor nec nunc egestas tempor.</p>
+          </div>
+          <button class="expand-btn" (click)="toggleDescription()">
+            {{ isDescriptionExpanded ? 'Zwiń opis' : 'Pokaż pełny opis' }}
+            <i class="bi" [class.bi-chevron-down]="!isDescriptionExpanded" [class.bi-chevron-up]="isDescriptionExpanded"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <aside class="ad-sidebar">
+        <div class="sales-card">
+          <div class="sales-header">
+            <h1 class="sales-title">{{ listing.brand }} {{ listing.model }}</h1>
+            <div class="sales-meta">
+              <span class="meta-badge"><i class="bi bi-calendar3"></i> {{ listing.year }}</span>
+              <span class="meta-badge"><i class="bi bi-shield-check"></i> {{ listing.condition === 'new' ? 'Nowy' : 'Używany' }}</span>
+            </div>
+          </div>
+
+          <div class="sales-price">
+            {{ listing.price | number:'1.0-0' }} <span class="currency">PLN</span>
+          </div>
+
+          <div class="seller-info">
+            <div class="seller-avatar">
+              <i class="bi bi-person-circle"></i>
+            </div>
+            <div class="seller-details">
+              <div class="seller-name">Bartosz Kuba</div>
+              <div class="seller-type">Osoba prywatna</div>
+            </div>
+          </div>
+          
+          <div class="seller-location">
+            <i class="bi bi-geo-alt-fill"></i> {{ listing.localization }}
+          </div>
+
+          <div class="sales-actions">
+            <button class="action-btn btn-primary">
+              <i class="bi bi-chat-dots-fill"></i> Napisz wiadomość
+            </button>
+            <button class="action-btn btn-outline phone-btn" (click)="togglePhone()">
+              <i class="bi bi-telephone-fill"></i>
+              <span *ngIf="!isPhoneVisible">Wyświetl numer</span>
+              <span *ngIf="isPhoneVisible">+48 123 456 789</span>
+            </button>
+          </div>
+          
+          <div class="sales-footer">
+            <button class="like-btn" [class.liked]="listing.liked" (click)="toggleLike()">
+              <i class="bi" [class.bi-heart-fill]="listing.liked" [class.bi-heart]="!listing.liked"></i>
+              {{ listing.liked ? 'Obserwujesz' : 'Zapisz' }}
+            </button>
+            <span class="views"><i class="bi bi-eye"></i> 1 204 wyświetlenia</span>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+
+    <ng-template #noData>
+      <div class="no-data-card">
+        <h1>⚠️ Brak danych</h1>
+        <p>
+          Nie udało się odczytać danych ogłoszenia.<br>
+          Wejdź na tę stronę klikając kartę na liście wyników, a nie odświeżając przeglądarkę.
+        </p>
+      </div>
+    </ng-template>
+
+  </div>
+</div>
